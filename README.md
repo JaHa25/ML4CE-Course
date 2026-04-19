@@ -48,6 +48,8 @@ distribution centre → retailers) under stochastic Poisson demand.
 
 **Result** — average reward ≈ **10,100** vs the REINFORCE-with-baseline benchmark at ≈ 7,800.
 
+![RL reward distribution](reinforcement-learning/figures/performance_comparison.png)
+
 See [`reinforcement-learning/`](reinforcement-learning/) for the code and full report.
 
 ---
