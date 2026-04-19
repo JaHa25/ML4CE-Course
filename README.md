@@ -11,14 +11,7 @@
 > Both algorithms were evaluated on held-out environments by the course's
 > blind grading platform.
 
-## Results at a glance
 
-| Project | Metric | Our submission | Benchmark(s) |
-|---|---|---|---|
-| Batch BO | Best titre (g/L) | **318.6** | <!-- TODO: add baseline / top team --> — |
-| RL / SA  | Mean episode reward | **≈10,100** | REINFORCE w/ baseline ≈7,800 · vanilla SA ≈8,900 · (s,S) oracle ≈11,200 |
-
----
 
 ## Project 1 — Batch Bayesian Optimization for Bioreactor Titre
 
@@ -34,7 +27,7 @@ Tight budget: 6 initial samples + 15 batches of 5 + **60 s** wall-clock per run.
 
 **Key idea — *cross-cell-type local sampling*.** When refining around the best
 point, 30 % of local candidates use the *other* cell types. This catches cases
-where a different cell type would actually win at similar conditions — something
+where a different cell type would actually win at similar conditions, something
 a naive local search would miss entirely, and the move that gave us the largest
 single jump in performance during development.
 
@@ -65,7 +58,7 @@ wall-clock.
 **Key idea — *restart with explore→exploit scheduling*.** Single SA runs
 plateaued around reward 7000. Independent restarts that progressively shift from
 random Xavier initialisation to small perturbations of the running best lifted
-the mean above 10,000 — a bigger gain than any single hyperparameter we tuned.
+the mean above 10,000, a bigger gain than any single hyperparameter we tuned.
 
 ![RL reward distribution](reinforcement-learning/figures/performance_comparison.png)
 
@@ -79,11 +72,11 @@ the mean above 10,000 — a bigger gain than any single hyperparameter we tuned.
 .
 ├── bayesian-optimization/
 │   ├── batch_bayesian_optimization.py   # GP + UCB + batch selection
-│   ├── report.pdf                       # 2-page methodology writeup
+│   ├── report.pdf                     
 │   └── figures/optimization_progress.png
 └── reinforcement-learning/
     ├── simulated_annealing_policy_opt.py  # multi-restart SA over NN weights
-    ├── report.pdf                         # 2-page methodology writeup
+    ├── report.pdf                        
     └── figures/{SCstructure,performance_comparison}.png
 ```
 
@@ -116,15 +109,14 @@ Run the course notebooks (`MLCE_Coursework2025_BatchBO.ipynb`,
 
 Joint coursework by:
 
-- **Jakob Elias Hammerschmidt** — RWTH Aachen (exchange semester at Imperial)
-- **Marc Al Hachem** — Imperial College London
-- **Seif Ahmed Moheb Elmehelmy** — Imperial College London
+- **Jakob Elias Hammerschmidt** 
+- **Marc Al Hachem** 
+- **Seif Ahmed Moheb Elmehelmy**
 
-All members contributed across both projects.
 
 ## Acknowledgments
 
-Imperial College London — OptiMaL-PSE Lab — ML4CE 2024/25.
+Imperial College London — OptiMaL-PSE Lab —
 Course materials, simulators, and benchmarking infrastructure from
 [OptiMaL-PSE-Lab/Imperial-ML4CE-Course](https://github.com/OptiMaL-PSE-Lab/Imperial-ML4CE-Course).
 
