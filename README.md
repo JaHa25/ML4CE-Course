@@ -1,85 +1,133 @@
 # ML for Chemical Engineering — Imperial College London
 
-Two coursework projects from the **ML4CE** course at Imperial College London,
-applying ML-based optimization to chemical engineering problems.
+![Python](https://img.shields.io/badge/python-3.10-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Course](https://img.shields.io/badge/Imperial-ML4CE%202024%2F25-9c1f3c)
 
-Both algorithms were submitted to the course's blind evaluation platform and
-ranked competitively against other student teams.
+> Two ranked-submission coursework projects from Imperial's
+> **Machine Learning for Chemical Engineering (ML4CE)** module:
+> a **Batch Bayesian Optimiser** for bioreactor titre maximisation,
+> and a **Multi-Restart Simulated Annealer** for inventory policy learning.
+> Both algorithms were evaluated on held-out environments by the course's
+> blind grading platform.
 
----
+## Results at a glance
 
-## Project 1: Batch Bayesian Optimization for Bioreactor Titre Maximisation
-
-Optimise five continuous bioreactor conditions (temperature, pH, three feed
-rates) and one categorical variable (cell type) to maximise product titre.
-
-**Approach**
-- Custom Gaussian Process with a mixed kernel: RBF on continuous inputs,
-  multiplicative categorical kernel on cell type
-- Adaptive length scales (wider early, narrower as data grows)
-- UCB acquisition with a decaying exploration coefficient β
-- Greedy batch selection with spatial repulsion + cell-type diversity bonus
-- Sobol candidates globally + local samples around the running best
-
-**Constraints** — 6 initial samples, 15 batches of 5, 60 s wall-clock budget per run.
-
-**Result** — best titre **318.6 g/L** on the held-out evaluation environment.
-
-![BO convergence](bayesian-optimization/figures/optimization_progress.png)
-
-See [`bayesian-optimization/`](bayesian-optimization/) for the code and full report.
+| Project | Metric | Our submission | Benchmark(s) |
+|---|---|---|---|
+| Batch BO | Best titre (g/L) | **318.6** | <!-- TODO: add baseline / top team --> — |
+| RL / SA  | Mean episode reward | **≈10,100** | REINFORCE w/ baseline ≈7,800 · vanilla SA ≈8,900 · (s,S) oracle ≈11,200 |
 
 ---
 
-## Project 2: Multi-Restart Simulated Annealing for Inventory Management
+## Project 1 — Batch Bayesian Optimization for Bioreactor Titre
 
-Learn an ordering policy for a three-echelon supply chain (manufacturer →
-distribution centre → retailers) under stochastic Poisson demand.
+**Problem.** Tune five continuous bioreactor inputs (temperature, pH, three feed
+rates) and one categorical input (cell type) to maximise product titre.
+Tight budget: 6 initial samples + 15 batches of 5 + **60 s** wall-clock per run.
 
-**Approach**
-- Simulated Annealing on the weights of a fixed-architecture policy network
-- Gaussian perturbations with a step size that shrinks over each restart
-- Metropolis acceptance with a cooling temperature schedule
-- 10 independent restarts with explore/exploit scheduling
-  (early restarts re-initialise weights, later restarts perturb the best so far)
-- Fitness is averaged over 5 episodes per evaluation to control reward variance
+**Approach.**
+- Mixed-input Gaussian Process: RBF on continuous dims × multiplicative kernel on cell type
+- UCB acquisition with adaptive β (3.5 → 1.3) and adaptive length scales
+- Greedy batch construction with spatial repulsion + cell-type diversity bonus
+- Sobol candidates globally; cross-cell-type local search around the running best
 
-**Constraints** — 5000 episodes, 5 min wall-clock budget per run.
+**Key idea — *cross-cell-type local sampling*.** When refining around the best
+point, 30 % of local candidates use the *other* cell types. This catches cases
+where a different cell type would actually win at similar conditions — something
+a naive local search would miss entirely, and the move that gave us the largest
+single jump in performance during development.
 
-**Result** — average reward ≈ **10,100** vs the REINFORCE-with-baseline benchmark at ≈ 7,800.
+![Batch BO convergence](bayesian-optimization/figures/optimization_progress.png)
+
+→ [`bayesian-optimization/`](bayesian-optimization/) — code and full report.
+
+---
+
+## Project 2 — Multi-Restart Simulated Annealing for Inventory Management
+
+![Three-echelon supply chain](reinforcement-learning/figures/SCstructure.png)
+
+*Three-echelon supply chain (factory → distribution centre → retailers) under
+stochastic Poisson demand. Diagram from the
+[ML4CE course materials](https://github.com/OptiMaL-PSE-Lab/Imperial-ML4CE-Course).*
+
+**Problem.** Learn an ordering policy across a three-echelon supply chain with
+lead-time delays and stochastic demand. Budget per run: 5000 episodes, 5 min
+wall-clock.
+
+**Approach.**
+- Direct, derivative-free optimisation of policy-network weights (~500 params)
+- Gaussian perturbation + Metropolis acceptance with cooling temperature
+- 10 independent SA restarts; explore probability decays from 0.8 → 0.2
+- Mean over 5 episodes per fitness evaluation to suppress demand variance
+
+**Key idea — *restart with explore→exploit scheduling*.** Single SA runs
+plateaued around reward 7000. Independent restarts that progressively shift from
+random Xavier initialisation to small perturbations of the running best lifted
+the mean above 10,000 — a bigger gain than any single hyperparameter we tuned.
 
 ![RL reward distribution](reinforcement-learning/figures/performance_comparison.png)
 
-See [`reinforcement-learning/`](reinforcement-learning/) for the code and full report.
+→ [`reinforcement-learning/`](reinforcement-learning/) — code and full report.
 
 ---
 
-## Setup & Dependencies
+## Repository layout
 
-Both algorithms depend on course-provided environments and utility modules
-that are **not redistributed here**. To run the code, set up the course repo
-alongside this one:
+```
+.
+├── bayesian-optimization/
+│   ├── batch_bayesian_optimization.py   # GP + UCB + batch selection
+│   ├── report.pdf                       # 2-page methodology writeup
+│   └── figures/optimization_progress.png
+└── reinforcement-learning/
+    ├── simulated_annealing_policy_opt.py  # multi-restart SA over NN weights
+    ├── report.pdf                         # 2-page methodology writeup
+    └── figures/{SCstructure,performance_comparison}.png
+```
 
-- Course repo: <https://github.com/OptiMaL-PSE-Lab/Imperial-ML4CE-Course>
-- BO algorithm slot: `BatchBayesianOptimization/algorithms/your_algorithm.py`
-- RL algorithm slot: `ReinforcementLearning/algorithms/your_algorithm.py`
+## Reproducing the results
 
-Drop the cleaned files in the corresponding slots, install the conda
-environment provided by the course (`ml4ce_bo.yml` / `ml4ce_rl.yml`), and run
-the course notebooks to reproduce the results.
+The code depends on the course-provided environment, simulator, and policy
+network architecture, which are **not redistributed** here.
 
----
+```bash
+# Clone the course repo
+git clone https://github.com/OptiMaL-PSE-Lab/Imperial-ML4CE-Course
+cd Imperial-ML4CE-Course
+
+# Set up the conda environments (one per project)
+conda env create -f BatchBayesianOptimization/ml4ce_bo.yml
+conda env create -f ReinforcementLearning/ml4ce_rl.yml
+```
+
+Then drop the cleaned algorithm files into the slots the course notebooks expect:
+
+| Course slot | File from this repo |
+|---|---|
+| `BatchBayesianOptimization/algorithms/your_algorithm.py` | [`bayesian-optimization/batch_bayesian_optimization.py`](bayesian-optimization/batch_bayesian_optimization.py) |
+| `ReinforcementLearning/algorithms/your_algorithm.py` | [`reinforcement-learning/simulated_annealing_policy_opt.py`](reinforcement-learning/simulated_annealing_policy_opt.py) |
+
+Run the course notebooks (`MLCE_Coursework2025_BatchBO.ipynb`,
+`ML4CE_RL_INV_CW.ipynb`) to reproduce the results.
 
 ## Authors
 
-- Jakob Elias Hammerschmidt
-- Marc Al Hachem
-- Seif Ahmed Moheb Elmehelmy
+Joint coursework by:
+
+- **Jakob Elias Hammerschmidt** — RWTH Aachen (exchange semester at Imperial)
+- **Marc Al Hachem** — Imperial College London
+- **Seif Ahmed Moheb Elmehelmy** — Imperial College London
+
+All members contributed across both projects.
 
 ## Acknowledgments
 
 Imperial College London — OptiMaL-PSE Lab — ML4CE 2024/25.
+Course materials, simulators, and benchmarking infrastructure from
+[OptiMaL-PSE-Lab/Imperial-ML4CE-Course](https://github.com/OptiMaL-PSE-Lab/Imperial-ML4CE-Course).
 
 ## License
 
-[MIT](LICENSE)
+Code: [MIT](LICENSE). Reports and figures: © the authors.
