@@ -30,7 +30,7 @@ Tight budget: 6 initial samples + 15 batches of 5 + **60 s** wall-clock per run.
 **Approach.**
 - Mixed-input Gaussian Process: RBF on continuous dims combined multiplicatively with a categorical kernel on cell type ($\theta_{\text{cat}}=0.25$), so knowledge transfers between cell types without forcing a shared response.
 - UCB acquisition with adaptive $\beta$ (3.5 → 1.3) and adaptive length scales; auto-boosted when no improvement for 3 batches or one cell type dominates.
-- Greedy batch construction with spatial repulsion ($\exp(-d_{\min}/r)$) plus a 5 % UCB bonus for cell types not yet in the current batch.
+- Greedy batch construction with spatial repulsion ($\exp(-d_{\min}/r)$ ) plus a 5 % UCB bonus for cell types not yet in the current batch.
 - Sobol candidates globally; cross-cell-type local search around the running best (70 % best type, 30 % others).
 
 **Key idea — *cross-cell-type local sampling*.** When refining around the best
